@@ -51,8 +51,8 @@ For questions, suggestions, or issues:
 ## Resources
 
 - [Quarto Extension Documentation](https://quarto.org/docs/extensions/)
-- [Quarto Extensions Gallery](https://quarto.org/docs/extensions/gallery.html)
 - [Quarto Extension Development Guide](https://quarto.org/docs/extensions/creating.html)
+- [Quarto Gallery](https://quarto.org/docs/gallery/)
 
 ## Acknowledgments
 
