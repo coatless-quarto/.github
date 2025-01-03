@@ -19,8 +19,6 @@ Most extensions require:
 - Quarto (>= 1.3)
 - Additional dependencies specified in individual repository README files
 
-Unless otherwise specified, all extensions in this organization are released under the AGPL-3 License. See individual repositories for specific license information.
-
 ## Contact
 
 For questions, suggestions, or issues:
