@@ -1,0 +1,63 @@
+name: Bug Report
+description: Report a bug or error in a Quarto extension
+title: "[BUG] "
+labels: ["t: bug", "s: triage-needed"]
+type: Bug
+assignees: [coatless]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Our projects are maintained by volunteers, so while we appreciate your report, we cannot guarantee how quickly it will be addressed.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Description of the bug and why you think it is a bug
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Tell us how to reproduce this bug.
+
+        Please include a minimal, fully reproducible example as a self-contained Quarto document or a link to a Git repository.
+      placeholder: |
+        You can share a Quarto document using the following syntax, _i.e._, using more backticks than you have in your document (usually four ` ```` `).
+
+        ````qmd
+        ---
+        title: "Reproducible Quarto Document"
+        format: html
+        filters:
+          - extension-name
+        ---
+
+        This is a reproducible Quarto document that uses the extension.
+
+        The end.
+        ````
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Your Environment
+      description: |
+        Please document the IDE (_e.g._, RStudio, Positron, VS Code), its version, and the operating system you're running (_e.g._, macOS Tahoe 26, Windows 11, Linux Debian 13).
+      placeholder: |
+        - IDE: Positron 2026.09.0
+        - OS: macOS Tahoe 26
+  - type: textarea
+    id: quarto-check
+    attributes:
+      label: Quarto Check Output
+      description: |
+        Please provide the output of `quarto check` so we know which version of Quarto and its dependencies you're running.
+      placeholder: |
+        ```bash
+        quarto check
+        ```

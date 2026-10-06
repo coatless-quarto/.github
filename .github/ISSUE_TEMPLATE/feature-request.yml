@@ -1,0 +1,41 @@
+name: Feature Request
+description: Suggest a new feature for a Quarto extension
+title: "[FEATURE] "
+labels: ["t: feature-request"]
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Our projects are maintained by volunteers, so while we appreciate your suggestions, we cannot guarantee how quickly they will be implemented.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: Clear description of the feature you'd like to see
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe how this feature would be useful
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed Solution
+      description: If you have ideas about implementation, describe them here
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to contribute to this feature?
+      options:
+        - Yes, I'd be willing to submit a PR
+        - I could help with design/testing
+        - No, I'm just suggesting the idea
+    validations:
+      required: true
