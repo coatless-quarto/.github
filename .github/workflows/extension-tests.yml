@@ -1,0 +1,129 @@
+# Reusable workflow that tests a Quarto extension.
+#
+# An extension repo calls it from .github/workflows/test.yml:
+#
+#   jobs:
+#     test:
+#       uses: coatless-quarto/.github/.github/workflows/extension-tests.yml@v1
+#
+# It runs the LuaLS type check on every folder in _extensions/, and the repo's
+# tests/*.test.lua with testing/qtest.lua on Quarto release and pre-release.
+# A pre-release failure is an early warning and doesn't fail the build.
+name: Extension tests
+
+on:
+  workflow_call:
+    inputs:
+      quarto-versions:
+        description: JSON list of Quarto versions to test against
+        type: string
+        default: '["release", "pre-release"]'
+      tinytex:
+        description: Install TinyTeX, for tests that render to pdf or beamer
+        type: boolean
+        default: false
+      python:
+        description: Set up Python with Jupyter, for fixtures with Python cells
+        type: boolean
+        default: false
+      python-packages:
+        description: Extra pip packages, separated by spaces
+        type: string
+        default: ""
+      r:
+        description: Set up R with rmarkdown, for fixtures with R cells
+        type: boolean
+        default: false
+      r-packages:
+        description: Extra R packages, one per line in pak form (e.g. any::dplyr)
+        type: string
+        default: ""
+      luals:
+        description: Run the LuaLS type check
+        type: boolean
+        default: true
+      harness-ref:
+        description: Version of coatless-quarto/.github to take the test runner from
+        type: string
+        default: v1
+
+permissions:
+  contents: read
+
+jobs:
+  types:
+    name: LuaLS type check
+    if: inputs.luals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: coatless-quarto/.github
+          ref: ${{ inputs.harness-ref }}
+          path: .qtest
+      - uses: quarto-dev/quarto-actions/setup@v2
+      - name: Install lua-language-server
+        run: |
+          mkdir -p "$RUNNER_TEMP/luals"
+          curl -sSL https://github.com/LuaLS/lua-language-server/releases/download/3.19.2/lua-language-server-3.19.2-linux-x64.tar.gz \
+            | tar -xz -C "$RUNNER_TEMP/luals"
+          echo "LUALS=$RUNNER_TEMP/luals/bin/lua-language-server" >> "$GITHUB_ENV"
+      - name: Check that the checker reports a deliberate error
+        run: |
+          result=$(.qtest/luals/check.sh --self-test | tail -1) || true
+          if [ "$result" != "TOTAL 1" ]; then
+            echo "::error::check.sh --self-test reported '$result' instead of 'TOTAL 1'"
+            exit 1
+          fi
+      - name: Check every extension at Warning level
+        run: |
+          status=0
+          for dir in _extensions/*/; do
+            echo "::group::$dir"
+            .qtest/luals/check.sh "$dir" Warning || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+  render:
+    name: Tests (Quarto ${{ matrix.quarto }})
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.quarto == 'pre-release' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        quarto: ${{ fromJSON(inputs.quarto-versions) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: coatless-quarto/.github
+          ref: ${{ inputs.harness-ref }}
+          path: .qtest
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ matrix.quarto }}
+          tinytex: ${{ inputs.tinytex }}
+      - if: inputs.python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - if: inputs.python
+        env:
+          PYTHON_PACKAGES: ${{ inputs.python-packages }}
+        # PYTHON_PACKAGES is split into separate arguments on purpose
+        run: |
+          # shellcheck disable=SC2086
+          pip install jupyter $PYTHON_PACKAGES
+      - if: inputs.r
+        uses: r-lib/actions/setup-r@v2
+      - if: inputs.r
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::knitr
+            any::rmarkdown
+            ${{ inputs.r-packages }}
+      - name: Run tests
+        run: quarto pandoc lua .qtest/testing/qtest.lua
